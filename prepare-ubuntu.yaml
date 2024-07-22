@@ -1,0 +1,17 @@
+---
+- hosts: ubuntu1
+
+  vars:
+    profile: throughput-performance
+    second_disk: 'xvdb'
+    partition: 'xvda14'
+    interface_name: 'net0'
+
+  roles:
+       
+      - encrypt-disk               #use `second_disk` var
+      - encrypt-partition          #use `partition` var
+      - rename-interface           #use `interface_name` var  
+      - disable-c-state             
+      - linux-system-roles.tuned   #use `profile` var
+      - show-cpu-info

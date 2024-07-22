@@ -1,0 +1,16 @@
+      - name: Install netplan template, apply config 
+        template: 
+          src: int.j2
+          dest: /etc/netplan/50-cloud-init.yaml
+          owner: root
+          group: root
+          mode: 0600
+        notify: netplan-apply
+        register: command_result
+         
+      - name: "Show interface {{ interface_name }}"
+        debug: 
+          msg: 
+            - "Interface name: {{ interface_name }}" 
+            - "IP address: {{ ansible_facts['default_ipv4']['address'] }}" 
+        when: "command_result['failed'] != True"  

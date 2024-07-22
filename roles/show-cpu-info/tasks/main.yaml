@@ -1,0 +1,16 @@
+- name: Check Intel Hyper-Threading (AMD multithreading)  
+  set_fact:
+    hyper_threading_status: >-
+            {{
+              'Hyper-Threading is enabled' if ansible_processor_threads_per_core | int > 1
+              else 'Hyper-Threading is disabled'
+            }}
+
+- name: Show CPU info
+  debug:
+    msg: 
+            - "Number of CPUs: {{ ansible_processor_cores }}"
+            - "Number of vCPUs: {{ ansible_processor_vcpus }}"
+            - "CPU model: {{ ansible_processor[2] }}"
+            - "{{ hyper_threading_status }}"
+      

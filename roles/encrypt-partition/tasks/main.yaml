@@ -1,0 +1,34 @@
+    - name: Install cryptsetup
+      apt:
+        name: cryptsetup
+        state: present
+    
+    - name: Check RSA private key exists 
+      stat:
+        path: /home/ubuntu/luks.key
+      register: luks_key_exist
+      
+    - name: Generate RSA private key (Skipping if already exists)
+      community.crypto.openssl_privatekey:
+        path: /home/ubuntu/luks.key
+      when: not luks_key_exist.stat.exists
+     
+    - name: Encrypt partition {{ partition }}
+      luks_device:
+        device: "/dev/{{ partition }}"
+        state: opened
+        name: secpart
+        keyfile: "luks.key"
+        type: luks1
+
+    - name: Format the partition {{ partition }}
+      filesystem:
+        fstype: ext4
+        dev: /dev/mapper/secpart
+     
+    - name: Mount the partition {{ partition }}
+      mount:
+        path: /mnt/secpart
+        src: /dev/mapper/secpart
+        fstype: ext4
+        state: mounted

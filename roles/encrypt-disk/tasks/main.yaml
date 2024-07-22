@@ -1,0 +1,39 @@
+    - name: Install cryptsetup
+      apt:
+        name: cryptsetup
+        state: present
+    
+    - name: List all disks and their size
+      debug:
+        msg: "Disk: {{ item.key }}, Size: {{ item.value.size }}"
+      loop: "{{ ansible_facts.devices | dict2items }}"
+      when: item.value.removable == "0" and item.key == second_disk
+      
+    - name: Check RSA private key exists 
+      stat:
+        path: /home/ubuntu/luks.key
+      register: luks_key_exist
+      
+    - name: Generate RSA private key (Skipping if already exists)
+      community.crypto.openssl_privatekey:
+        path: /home/ubuntu/luks.key
+      when: not luks_key_exist.stat.exists
+
+    - name: Encrypt disk {{ second_disk }}
+      luks_device:
+        device: "/dev/{{ second_disk }}"
+        state: opened
+        name: secenc
+        keyfile: "luks.key"
+
+    - name: Format the encrypted disk {{ second_disk }}
+      filesystem:
+        fstype: ext4
+        dev: /dev/mapper/secenc
+
+    - name: Mount the encrypted disk {{ second_disk }}
+      mount:
+        path: /mnt/second_disk
+        src: /dev/mapper/secenc
+        fstype: ext4
+        state: mounted

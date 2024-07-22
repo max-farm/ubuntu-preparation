@@ -1,0 +1,8 @@
+network:
+    ethernets:
+        {{ interface_name }}:
+            dhcp4: true
+            match: 
+              macaddress: {{ ansible_facts['default_ipv4']['macaddress'] }}
+            set-name: {{ interface_name }}
+    version: 2
